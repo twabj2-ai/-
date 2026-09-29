@@ -72,11 +72,7 @@ const CONFIG = {
   bank: "케이뱅크",
   account: "100-301-168768",
   holder: "갑부복권",
-  apps: [   // 앱 실행 주소는 바뀔 수 있으니 실제 폰에서 테스트하세요
-    { name: "토스", url: (c) => `supertoss://send?bank=${encodeURIComponent(c.bank)}&accountNo=${c.digits}&origin=qr` },
-    { name: "카카오뱅크", url: () => "kakaobank://" },
-  ],
-};
+
 /* =========================== */
 const $ = (id) => document.getElementById(id);
 const digits = CONFIG.account.replace(/\D/g, "");
