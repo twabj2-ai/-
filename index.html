@@ -69,9 +69,9 @@
 <script>
 /* ===== 여기만 수정하세요 ===== */
 const CONFIG = {
-  bank: "케이뱅크",
-  account: "100-301-168768",
-  holder: "갑부복권",
+  bank: "농협은행",
+  account: "123-4567-8901-23",
+  holder: "홍길동",
   apps: [   // 앱 실행 주소는 바뀔 수 있으니 실제 폰에서 테스트하세요
     { name: "토스", url: (c) => `supertoss://send?bank=${encodeURIComponent(c.bank)}&accountNo=${c.digits}&origin=qr` },
     { name: "카카오뱅크", url: () => "kakaobank://" },
@@ -80,6 +80,7 @@ const CONFIG = {
 /* =========================== */
 const $ = (id) => document.getElementById(id);
 const digits = CONFIG.account.replace(/\D/g, "");
+const copyText = `${CONFIG.bank} ${digits}`;   // 복사되는 내용: 은행명 + 계좌번호
 $("bank").textContent = CONFIG.bank;
 $("holder").textContent = CONFIG.holder;
 $("acct").textContent = CONFIG.account;
@@ -91,11 +92,11 @@ CONFIG.apps.forEach((a) => {
 });
 
 async function copyAccount() {
-  try { await navigator.clipboard.writeText(digits); return true; }
+  try { await navigator.clipboard.writeText(copyText); return true; }
   catch (e) {
     try {
       const t = document.createElement("textarea");
-      t.value = digits; t.setAttribute("readonly", ""); t.style.cssText = "position:fixed;opacity:0";
+      t.value = copyText; t.setAttribute("readonly", ""); t.style.cssText = "position:fixed;opacity:0";
       document.body.appendChild(t); t.select();
       const ok = document.execCommand("copy"); t.remove(); return ok;
     } catch (_) { return false; }
@@ -116,9 +117,23 @@ async function doCopy() {
   }
 }
 
+function leavePage() {
+  document.body.innerHTML = "";              // 화면 즉시 비우기
+  document.body.style.background = "#000";
+  try { window.close(); } catch (e) {}       // 스캐너가 연 창이면 닫힘
+  if (history.length > 1) history.back();    // 이전 화면이 있으면 복귀
+  else setTimeout(() => location.replace("about:blank"), 50);
+}
+
 $("okBtn").addEventListener("click", async () => {
-  $("overlay").classList.remove("on");   // 팝업 닫고 원래 화면으로
-  await doCopy();                          // 확인을 누르는 순간 실제 복사
+  const ok = await copyAccount();            // 확인을 누르는 순간 실제 복사
+  if (ok) { leavePage(); return; }
+  // 복사 실패 시에는 화면을 비우지 않고 직접 복사 안내
+  $("overlay").classList.remove("on");
+  const st = $("status");
+  st.className = "status fail";
+  st.textContent = "복사에 실패했습니다. 위 계좌번호를 길게 눌러 직접 복사해 주세요.";
+  $("apps").classList.add("on");
 });
 $("again").addEventListener("click", doCopy);
 window.addEventListener("load", () => $("overlay").classList.add("on"));
